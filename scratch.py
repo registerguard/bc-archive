@@ -34,10 +34,24 @@ for video in videos:
     #print(video['digital_master_id'])
     vurl = "https://cms.api.brightcove.com/v1/accounts/{0}/videos/{1}/sources".format(accountid,video['id'])
     vr = requests.get(vurl, headers=headers)
-    vdata = json.loads(vr.text)
-    print(vdata)
-#5366518646001
-
-
-# Need to investigate this link for downloading video links
-# http://docs.brightcove.com/en/video-cloud/cms-api/samples/download-links.html
+    vtext = vr.text
+    #print(vtext)
+    # Get all renditions
+    rens = json.loads(vtext)
+    for ren in rens:
+        #print(ren['width'])
+        if ren.has_key('width') and ren.has_key('src'):
+            if ren['width'] == 960:
+                if "http://" in ren['src']:
+                    print ren['src']
+                    # See: http://docs.brightcove.com/en/video-cloud/cms-api/references/cms-api/versions/v1/index.html#api-videoGroup-Get_Videos
+                    outname = "out/{0}.mp4".format(video['id'])
+                    rr = requests.get(ren['src'])
+                    outfile = open(outname, 'wb')
+                    # See: http://stackoverflow.com/a/28374584
+                    for chunk in rr.iter_content(chunk_size=255):
+                        if chunk:
+                            outfile.write(chunk)
+                    outfile.close()
+                    
+                    

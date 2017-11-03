@@ -22,19 +22,20 @@ def getToken():
 # See: http://docs.python-requests.org/en/master/user/quickstart/#custom-headers
 # See: http://docs.brightcove.com/en/video-cloud/cms-api/getting-started/overview-cms.html#parameters
 accountid = getSecret('rg-bc-account')
-url = "https://cms.api.brightcove.com/v1/accounts/{}/videos?limit=2&sort=-created_at".format(accountid)
+url = "https://cms.api.brightcove.com/v1/accounts/{}/videos?limit=3&sort=-created_at".format(accountid) # NEED TO FIGURE OUT HOW TO PAGE ON THIS
 bctoken = getToken()
 headers = {"Authorization": "Bearer {}".format(bctoken)}
 r = requests.get(url, headers=headers)
 videos = json.loads(r.text)
 for video in videos:
-    #print(video, "\n\n\n")
+    print(video, "\n\n\n")
     #print(video['id'])
     #print(video['src'])
     #print(video['digital_master_id'])
     vurl = "https://cms.api.brightcove.com/v1/accounts/{0}/videos/{1}/sources".format(accountid,video['id'])
     vr = requests.get(vurl, headers=headers)
     vtext = vr.text
+    vorig = video['original_filename'].split(".")
     #print(vtext)
     # Get all renditions
     rens = json.loads(vtext)
@@ -45,7 +46,7 @@ for video in videos:
                 if "http://" in ren['src']:
                     print ren['src']
                     # See: http://docs.brightcove.com/en/video-cloud/cms-api/references/cms-api/versions/v1/index.html#api-videoGroup-Get_Videos
-                    outname = "out/{0}.mp4".format(video['id'])
+                    outname = "out2/{0}-{1}.mp4".format(vorig[0],video['id'])
                     rr = requests.get(ren['src'])
                     outfile = open(outname, 'wb')
                     # See: http://stackoverflow.com/a/28374584
